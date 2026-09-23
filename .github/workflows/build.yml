@@ -7,7 +7,7 @@ name: Build linux-enigmarsos
 on:
   schedule:
     # 11:30 IST (UTC+5:30) = 06:00 UTC.
-    - cron: '0 6 * * 3'
+    - cron: '0 12 * * 3'
   workflow_dispatch:
     inputs:
       force_rebuild:
