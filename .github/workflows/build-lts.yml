@@ -78,7 +78,9 @@ jobs:
             echo "Packaging already current; nothing to commit."
           else
             git commit -m "auto: track Arch linux-lts $(awk -F= '/^pkgver=/{print $2; exit}' PKGBUILD)"
-            git push origin HEAD:lts
+            # Fully qualified: a `lts` release *tag* also exists, so bare
+            # `HEAD:lts` is ambiguous ("dst refspec matches more than one").
+            git push origin HEAD:refs/heads/lts
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
