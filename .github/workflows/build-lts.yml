@@ -1,7 +1,8 @@
 # Build linux-enigmarsos-lts in an Arch Linux container.
 #
 # Weekly schedule: 04:00 UTC every Wednesday, plus manual dispatch.
-# Releases to the fixed `lts` tag (mirror-ready 7-file set).
+# Each run first tries to advance the packaging (Arch linux-lts +
+# BORE) and commits the result to `lts`, then compiles it.
 # This file is identical on main and lts: it always checks out `lts`,
 # because scheduled runs execute on the default branch.
 name: Build linux-enigmarsos-lts
@@ -46,9 +47,45 @@ env:
   ENABLE_CCACHE: '1'
 
 jobs:
+  update:
+    name: Update LTS packaging from Arch
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: lts
+          fetch-depth: 0
+
+      - name: Run Arch + BORE update scripts
+        run: |
+          set -euo pipefail
+          ./scripts/update-arch-kernel.sh
+          ./scripts/update-bore.sh
+          ./scripts/status.sh || true
+
+      - name: Commit and push if packaging changed
+        id: commit
+        run: |
+          set -euo pipefail
+          git config user.name "EnigmarsOS Kernel CI"
+          git config user.email "ci@enigmarsos.org"
+          git add PKGBUILD patches/bore.patch patches/bore.meta \
+            config/config.x86_64 keys/pgp
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Packaging already current; nothing to commit."
+          else
+            git commit -m "auto: track Arch linux-lts $(awk -F= '/^pkgver=/{print $2; exit}' PKGBUILD)"
+            git push origin HEAD:lts
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
   decide:
     name: Decide whether to compile
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    needs: update
+    runs-on: ubuntu-latest
     outputs:
       compile: ${{ steps.decide.outputs.compile }}
       publish: ${{ steps.decide.outputs.publish }}
@@ -103,24 +140,37 @@ jobs:
           force="${{ github.event.inputs.force_rebuild }}"
           publish_in="${{ github.event.inputs.publish }}"
           pkg_version="${{ steps.meta.outputs.package_version }}"
+          # Moving tag: every LTS publish updates the same `lts` release.
+          # Per-version skip checks below still use $asset names, so a new
+          # kernel version always rebuilds while repeats are skipped.
+          tag="lts"
           event="${{ github.event_name }}"
+          changed="${{ needs.update.outputs.changed }}"
 
           trigger="$event"
           if [ "$event" = "workflow_dispatch" ]; then trigger=manual; fi
           if [ "$event" = "schedule" ]; then trigger=scheduled; fi
           publish=false
           compile=true
+          asset="linux-enigmarsos-lts-${pkg_version}-x86_64.pkg.tar.zst"
 
-          if [ "$event" = "schedule" ]; then publish=true; fi
-          if [ "$publish_in" = "true" ]; then publish=true; fi
-          if [ "$force" = "" ]; then force=true; fi
-
-          if [ "$force" != "true" ]; then
-            asset="linux-enigmarsos-lts-${pkg_version}-x86_64.pkg.tar.zst"
-            if gh release view lts --json assets --jq '.assets[].name' 2>/dev/null | grep -qx "$asset"; then
-              echo "lts release already contains $asset and force_rebuild=false; skipping compile."
+          if [ "$event" = "schedule" ]; then
+            publish=true
+            if [ "$changed" != "true" ] && gh release view "$tag" --json assets --jq '.assets[].name' 2>/dev/null | grep -qx "$asset"; then
+              echo "No packaging updates and $asset already released; skipping compile."
               compile=false
               publish=false
+            fi
+          else
+            if [ "$publish_in" = "true" ]; then publish=true; fi
+            if [ "$force" = "" ]; then force=true; fi
+
+            if [ "$force" != "true" ]; then
+              if gh release view "$tag" --json assets --jq '.assets[].name' 2>/dev/null | grep -qx "$asset"; then
+                echo "lts release already contains $asset and force_rebuild=false; skipping compile."
+                compile=false
+                publish=false
+              fi
             fi
           fi
 
@@ -133,7 +183,7 @@ jobs:
     name: Compile LTS kernel
     needs: decide
     if: needs.decide.outputs.compile == 'true'
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     timeout-minutes: 360
     steps:
       - name: Free disk space
@@ -239,7 +289,16 @@ jobs:
       - name: Build GitHub-mirror pacman repo
         run: |
           set -euo pipefail
-          ./scripts/publish-repo.sh out out
+          docker run --rm \
+            -v "$PWD":/src:ro \
+            -v "$PWD/out":/out \
+            "${ARCH_IMAGE}" \
+            bash -c '
+              set -euo pipefail
+              pacman -Syu --noconfirm --needed pacman pacman-contrib
+              command -v repo-add
+              bash /src/scripts/publish-repo.sh /out /out
+            '
           test -f out/linux-enigmarsos-lts.db
           test -f out/linux-enigmarsos-lts.db.tar.gz
           test ! -L out/linux-enigmarsos-lts.db
@@ -270,22 +329,24 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          tag="lts"
           title="linux-enigmarsos-lts ${{ needs.decide.outputs.package_version }} (BORE ${{ needs.decide.outputs.bore_version }})"
-          if gh release view lts >/dev/null 2>&1; then
-            gh release upload lts --clobber \
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" --clobber \
               out/linux-enigmarsos-lts-*.pkg.tar.zst \
               out/linux-enigmarsos-lts.db \
               out/linux-enigmarsos-lts.db.tar.gz \
               out/linux-enigmarsos-lts.files \
               out/linux-enigmarsos-lts.files.tar.gz \
               out/SHA256SUMS
-            gh release edit lts --title "$title" --notes-file out/RELEASE-NOTES.md
+            gh release edit "$tag" --latest=false --title "$title" --notes-file out/RELEASE-NOTES.md
             echo "Updated lts release"
           else
-            gh release create lts \
+            gh release create "$tag" \
+              --latest=false \
               --title "$title" \
               --notes-file out/RELEASE-NOTES.md \
-              --target "${{ github.sha }}" \
+              --target "$(git rev-parse HEAD)" \
               out/linux-enigmarsos-lts-*.pkg.tar.zst \
               out/linux-enigmarsos-lts.db \
               out/linux-enigmarsos-lts.db.tar.gz \
