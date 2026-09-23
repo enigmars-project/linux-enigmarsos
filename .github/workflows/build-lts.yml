@@ -140,7 +140,10 @@ jobs:
           force="${{ github.event.inputs.force_rebuild }}"
           publish_in="${{ github.event.inputs.publish }}"
           pkg_version="${{ steps.meta.outputs.package_version }}"
-          tag="linux-enigmarsos-lts-${{ steps.meta.outputs.pkgver }}"
+          # Moving tag: every LTS publish updates the same `lts` release.
+          # Per-version skip checks below still use $asset names, so a new
+          # kernel version always rebuilds while repeats are skipped.
+          tag="lts"
           event="${{ github.event_name }}"
           changed="${{ needs.update.outputs.changed }}"
 
@@ -326,7 +329,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag="linux-enigmarsos-lts-${{ needs.decide.outputs.pkgver }}"
+          tag="lts"
+          title="linux-enigmarsos-lts ${{ needs.decide.outputs.package_version }} (BORE ${{ needs.decide.outputs.bore_version }})"
           if gh release view "$tag" >/dev/null 2>&1; then
             gh release upload "$tag" --clobber \
               out/linux-enigmarsos-lts-*.pkg.tar.zst \
@@ -335,12 +339,12 @@ jobs:
               out/linux-enigmarsos-lts.files \
               out/linux-enigmarsos-lts.files.tar.gz \
               out/SHA256SUMS
-            gh release edit "$tag" --latest=false --title "$tag" --notes-file out/RELEASE-NOTES.md
+            gh release edit "$tag" --latest=false --title "$title" --notes-file out/RELEASE-NOTES.md
             echo "Updated lts release"
           else
             gh release create "$tag" \
               --latest=false \
-              --title "$tag" \
+              --title "$title" \
               --notes-file out/RELEASE-NOTES.md \
               --target "$(git rev-parse HEAD)" \
               out/linux-enigmarsos-lts-*.pkg.tar.zst \
@@ -351,4 +355,4 @@ jobs:
               out/SHA256SUMS
             echo "Created lts release"
           fi
-          echo "Mirror: https://github.com/enigmars-project/linux-enigmarsos/releases/download/$tag"
+          echo "Mirror: https://github.com/enigmars-project/linux-enigmarsos/releases/download/lts"
