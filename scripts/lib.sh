@@ -141,3 +141,17 @@ with urllib.request.urlopen(url, timeout=30) as resp:
 print(data["pkgver"], data["pkgrel"])
 PY
 }
+
+# Extract members of a pacman package matching a path pattern.
+# libarchive bsdtar does not support GNU tar --wildcards, so match
+# against a precomputed member list instead.
+#   $1 = package file, $2 = member list file, $3 = dest dir, $4 = pattern
+extract_matching() {
+  local pkg="$1" list="$2" dest="$3" pattern="$4" f
+  mapfile -t hits < <(grep -E "(^|/)${pattern}$" "$list" || true)
+  ((${#hits[@]})) || return 0
+  for f in "${hits[@]}"; do
+    [[ -n "$f" ]] || continue
+    bsdtar -C "$dest" -xf "$pkg" "$f"
+  done
+}

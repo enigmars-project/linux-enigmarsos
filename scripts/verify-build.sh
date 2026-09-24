@@ -117,16 +117,7 @@ has_path 'usr/lib/modules/.*/build/Makefile' "$WORKDIR/headers.list" \
 has_prefix 'usr/src/linux-enigmarsos' "$WORKDIR/headers.list" \
   && pass "headers /usr/src symlink present" || bad "/usr/src/linux-enigmarsos missing"
 
-# Host bsdtar (libarchive) does not support GNU tar --wildcards.
-extract_matching() {
-  local pkg="$1" list="$2" dest="$3" pattern="$4" f
-  mapfile -t hits < <(grep -E "(^|/)${pattern}$" "$list" || true)
-  ((${#hits[@]})) || return 0
-  for f in "${hits[@]}"; do
-    [[ -n "$f" ]] || continue
-    bsdtar -C "$dest" -xf "$pkg" "$f"
-  done
-}
+# Shared helper in lib.sh (libarchive bsdtar has no GNU tar --wildcards).
 
 info "Extracting identity and configuration"
 extract_matching "$KERNEL_PKG" "$WORKDIR/kernel.list" "$WORKDIR" \

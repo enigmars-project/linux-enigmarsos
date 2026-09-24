@@ -107,10 +107,8 @@ prepare() {
   cd $_srcname
 
   echo "Setting version..."
-  # Arch's patch sets EXTRAVERSION=-arch1. Clear it so uname -r looks like
-  # other distros (7.1.8-2-enigmarsos), not 7.1.8-arch1-2-enigmarsos.
+  # localversion files add -$pkgrel and -enigmarsos to the kernel release.
   # Keep upstream version + pkgrel so /usr/lib/modules/* stays unique.
-  sed -i 's/^EXTRAVERSION =.*/EXTRAVERSION =/' Makefile
   echo "-$pkgrel" > localversion.10-pkgrel
   echo "-enigmarsos" > localversion.20-pkgname
 
@@ -130,6 +128,15 @@ prepare() {
     || _die "kernel/sched/bore.c missing after patching; BORE did not apply"
   grep -q "SCHED_BORE_VERSION[[:space:]]\\+\"$_bore_version\"" include/linux/sched/bore.h \
     || _die "BORE version string $_bore_version not found in include/linux/sched/bore.h"
+
+  echo "Clearing Arch EXTRAVERSION..."
+  # The Arch patch sets EXTRAVERSION=-archN *after* the tree is extracted,
+  # so it must be cleared after patching (a pre-patch sed is a no-op).
+  # uname -r must look like other distros (7.2.6-3-enigmarsos),
+  # not 7.2.6-arch2-3-enigmarsos.
+  sed -i 's/^EXTRAVERSION =.*/EXTRAVERSION =/' Makefile
+  grep -q '^EXTRAVERSION =$' Makefile \
+    || _die "EXTRAVERSION was not cleared; upstream Makefile format may have changed"
 
   echo "Setting x86-64 ISA level to $_x86_64_march..."
   # Same position as vanilla -march=x86-64, after -mno-avx/-mno-sse, so
