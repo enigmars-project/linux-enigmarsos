@@ -113,6 +113,15 @@ jobs:
           if [ "$publish_in" = "true" ]; then publish=true; fi
           if [ "$force" = "" ]; then force=true; fi
 
+          if [ "$event" = "schedule" ]; then
+            # Strict x.x.x compare: same kernel already released -> skip.
+            if gh release view "$tag" >/dev/null 2>&1; then
+              echo "Release $tag already exists (same x.x.x); skipping scheduled compile."
+              compile=false
+              publish=false
+            fi
+          fi
+
           if [ "$force" != "true" ]; then
             if gh release view "$tag" >/dev/null 2>&1; then
               echo "Release $tag already exists and force_rebuild=false; skipping compile."
