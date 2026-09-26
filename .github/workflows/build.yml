@@ -45,8 +45,47 @@ env:
   ENABLE_CCACHE: '1'
 
 jobs:
+  update:
+    name: Update packaging from Arch
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Same ref the rest of the run uses (schedules: default branch).
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Run Arch + BORE update scripts
+        run: |
+          set -euo pipefail
+          ./scripts/update-arch-kernel.sh
+          ./scripts/update-bore.sh
+          ./scripts/status.sh || true
+
+      - name: Commit and push if packaging changed
+        id: commit
+        run: |
+          set -euo pipefail
+          git config user.name "EnigmarsOS Kernel CI"
+          git config user.email "ci@enigmarsos.org"
+          git add PKGBUILD patches/bore.patch patches/bore.meta \
+            config/config.x86_64 keys/pgp
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Packaging already current; nothing to commit."
+          else
+            git commit -m "auto: track Arch linux $(awk -F= '/^pkgver=/{print $2; exit}' PKGBUILD)"
+            # Fully qualified ref (e.g. refs/heads/main): a bare name would be
+            # ambiguous if a tag of the same name ever exists.
+            git push origin "HEAD:${{ github.ref }}"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
   decide:
     name: Decide whether to compile
+    needs: update
     runs-on: blacksmith-2vcpu-ubuntu-2404
     outputs:
       compile: ${{ steps.decide.outputs.compile }}
@@ -294,7 +333,9 @@ jobs:
           gh release create "$tag" \
             --title "$title" \
             --notes-file out/RELEASE-NOTES.md \
-            --target "${{ github.sha }}" \
+            # HEAD, not github.sha: the update job may have added a packaging
+            # commit, and the release must point at the tree that was built.
+            --target "$(git rev-parse HEAD)" \
             out/linux-enigmarsos-*.pkg.tar.zst \
             out/linux-enigmarsos-headers-*.pkg.tar.zst \
             out/linux-enigmarsos.db \
