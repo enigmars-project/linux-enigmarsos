@@ -212,6 +212,9 @@ sudo pacman -U linux-enigmarsos-$(package_version)-x86_64.pkg.tar.zst \\
 Keep the official Arch \`linux\` package installed as the fallback kernel.
 EOF
 
+echo "==> Building pacman repo metadata (db/files, in-container: repo-add lives here)"
+sudo -u builder bash -lc "cd /build/pkg && ./scripts/publish-repo.sh /build/output /build/output"
+
 echo "==> ci-build: OK"
 # Everything root wrote above (initramfs is mode 600, checksums, metadata)
 # must be readable by the host runner user or upload-artifact fails EACCES.

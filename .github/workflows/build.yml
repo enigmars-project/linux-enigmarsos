@@ -300,10 +300,12 @@ jobs:
           grep -q '^bore_version=' out/BUILD-METADATA.txt
           cat out/BUILD-METADATA.txt
 
-      - name: Build GitHub-mirror pacman repo
+      - name: Verify GitHub-mirror pacman repo
         run: |
           set -euo pipefail
-          ./scripts/publish-repo.sh out out
+          # Repo metadata is built inside the container (ci-build.sh), where
+          # repo-add exists. Ubuntu runners have no repo-add; never run
+          # publish-repo.sh here.
           test -f out/linux-enigmarsos.db
           test -f out/linux-enigmarsos.db.tar.gz
           test ! -L out/linux-enigmarsos.db
