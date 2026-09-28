@@ -213,7 +213,8 @@ Keep the official Arch \`linux\` package installed as the fallback kernel.
 EOF
 
 echo "==> Building pacman repo metadata (db/files, in-container: repo-add lives here)"
-sudo -u builder bash -lc "cd /build/pkg && ./scripts/publish-repo.sh /build/output /build/output"
+# $OUT, not /build/output: PKGDEST=${OUT}, so the packages live in $OUT.
+sudo -u builder bash -lc "cd /build/pkg && ./scripts/publish-repo.sh \"$OUT\" \"$OUT\""
 
 echo "==> ci-build: OK"
 # Everything root wrote above (initramfs is mode 600, checksums, metadata)
