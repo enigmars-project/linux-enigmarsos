@@ -193,7 +193,7 @@ jobs:
     name: Compile kernel
     needs: decide
     if: needs.decide.outputs.compile == 'true'
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: blacksmith-16vcpu-ubuntu-2404
     timeout-minutes: 360
     outputs:
       release_tag: ${{ steps.tag.outputs.release_tag }}
@@ -333,8 +333,9 @@ jobs:
         with:
           name: linux-enigmarsos-${{ needs.decide.outputs.package_version }}
           path: |
+            # NOTE: linux-enigmarsos-*.pkg.tar.zst already matches the
+            # -headers package; listing it again would upload it twice.
             out/linux-enigmarsos-*.pkg.tar.zst
-            out/linux-enigmarsos-headers-*.pkg.tar.zst
             out/linux-enigmarsos.db
             out/linux-enigmarsos.db.tar.gz
             out/linux-enigmarsos.files
@@ -360,12 +361,14 @@ jobs:
           # packaging commit, and the release must point at the tree that
           # was built. (Keep comments out of the \-continued command below:
           # a # line breaks the continuation and orphans the next flag.)
-          gh release create "$tag" \
+          # NOTE: linux-enigmarsos-*.pkg.tar.zst already matches the
+          # -headers package; passing it twice uploads a duplicate asset.
+          attempt=0
+          until gh release create "$tag" \
             --title "$title" \
             --notes-file out/RELEASE-NOTES.md \
             --target "$(git rev-parse HEAD)" \
             out/linux-enigmarsos-*.pkg.tar.zst \
-            out/linux-enigmarsos-headers-*.pkg.tar.zst \
             out/linux-enigmarsos.db \
             out/linux-enigmarsos.db.tar.gz \
             out/linux-enigmarsos.files \
@@ -373,6 +376,15 @@ jobs:
             out/SHA256SUMS \
             out/B2SUMS \
             out/BUILD-METADATA.txt \
-            out/initramfs-linux-enigmarsos.img
+            out/initramfs-linux-enigmarsos.img; do
+            attempt=$((attempt + 1))
+            if [ "$attempt" -ge 3 ]; then
+              echo "Release publish failed after 3 attempts." >&2
+              exit 1
+            fi
+            echo "Publish attempt $attempt failed; deleting partial release and retrying in 30s..."
+            gh release delete "$tag" --yes --cleanup-tag >/dev/null 2>&1 || true
+            sleep 30
+          done
           echo "Published $tag"
           echo "Mirror: https://github.com/enigmars-project/linux-enigmarsos/releases/latest/download"
