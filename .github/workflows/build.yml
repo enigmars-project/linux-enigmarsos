@@ -50,6 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       changed: ${{ steps.commit.outputs.changed }}
+      sha: ${{ steps.commit.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -82,6 +83,10 @@ jobs:
             git push origin "HEAD:${{ github.ref }}"
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
+          # The exact tree downstream jobs must build: the auto-commit if
+          # packaging changed, else the triggering commit. A bare checkout
+          # would pin to github.sha and miss the auto-commit.
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
   decide:
     name: Decide whether to compile
@@ -97,8 +102,12 @@ jobs:
       upstream_kernel: ${{ steps.meta.outputs.upstream_kernel }}
       bore_version: ${{ steps.meta.outputs.bore_version }}
       bore_commit: ${{ steps.meta.outputs.bore_commit }}
+      build_sha: ${{ needs.update.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Pin to the post-update tree, not the triggering commit.
+          ref: ${{ needs.update.outputs.sha }}
 
       - name: Read packaging metadata
         id: meta
@@ -213,6 +222,15 @@ jobs:
           free -h
 
       - uses: actions/checkout@v4
+        with:
+          # Same tree decide evaluated: the update job's commit, if any.
+          ref: ${{ needs.decide.outputs.build_sha }}
+
+      - name: Record built commit
+        id: head
+        run: |
+          set -euo pipefail
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Cache ccache
         if: env.ENABLE_CCACHE == '1'
@@ -233,7 +251,8 @@ jobs:
       - name: Build packages in Arch container
         env:
           SOURCE_DATE_EPOCH: ${{ github.event.head_commit.timestamp && github.event.repository.pushed_at || '' }}
-          GITHUB_SHA: ${{ github.sha }}
+          # Built commit, not the triggering commit (update may have added one).
+          GITHUB_SHA: ${{ steps.head.outputs.sha }}
           GITHUB_REF: ${{ github.ref }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_RUN_ID: ${{ github.run_id }}

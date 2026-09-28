@@ -135,17 +135,22 @@ chmod 755 "$INITDIR/init"
 ) | gzip -9 > "$WORKDIR/initramfs.img"
 
 LOG="$WORKDIR/qemu.log"
-info "Booting QEMU (TCG, 120s timeout)"
+info "Booting QEMU (TCG, full CPU features, 180s timeout)"
 set +e
-timeout 120 qemu-system-x86_64 \
+# -accel tcg + -cpu max: the kernel is x86-64-v3 (AVX2), which neither the
+# legacy qemu64 CPU model nor KVM-on-hosts-without-AVX can execute.
+# earlyprintk is intentionally off: with console=ttyS0 it double-prints
+# every line to the same serial port.
+timeout 180 qemu-system-x86_64 \
   -machine q35 \
-  -cpu qemu64 \
+  -accel tcg \
+  -cpu max \
   -m 512 \
   -nographic \
   -no-reboot \
   -kernel "$VMLINUZ" \
   -initrd "$WORKDIR/initramfs.img" \
-  -append "console=ttyS0,115200 earlyprintk=serial,ttyS0,115200 panic=1" \
+  -append "console=ttyS0,115200 panic=1" \
   >"$LOG" 2>&1
 rc=$?
 set -e
