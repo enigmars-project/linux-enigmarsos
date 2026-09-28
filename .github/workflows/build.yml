@@ -355,7 +355,7 @@ jobs:
         run: |
           set -euo pipefail
           tag="${{ steps.tag.outputs.release_tag }}"
-          title="linux-enigmarsos ${{ needs.decide.outputs.package_version }} (BORE ${{ needs.decide.outputs.bore_version }})"
+          title="linux-enigmarsos-${{ needs.decide.outputs.upstream_kernel }}"
           # Target HEAD, not github.sha: the update job may have added a
           # packaging commit, and the release must point at the tree that
           # was built. (Keep comments out of the \-continued command below:
