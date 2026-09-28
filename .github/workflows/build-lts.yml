@@ -38,7 +38,9 @@ concurrency:
 
 permissions:
   contents: write
-  actions: read
+  actions: write
+  # actions:write lets the ccache step actually save (restore works
+  # read-only, but without write every build pays full compile time).
 
 env:
   # Official Arch image, pinned by digest. Update with:
@@ -49,6 +51,9 @@ env:
 jobs:
   update:
     name: Update LTS packaging from Arch
+    # Pinned rebuilds must reproduce the dispatch-time tree: skip the
+    # auto-update when the maintainer pinned an explicit version.
+    if: ${{ inputs.kernel_version == '' && inputs.bore_version == '' }}
     runs-on: ubuntu-latest
     outputs:
       changed: ${{ steps.commit.outputs.changed }}

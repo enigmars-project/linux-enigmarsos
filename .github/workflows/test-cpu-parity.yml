@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 env:
   # Same pinned image as .github/workflows/build.yml.

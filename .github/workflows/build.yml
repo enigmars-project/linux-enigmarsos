@@ -36,7 +36,9 @@ concurrency:
 
 permissions:
   contents: write
-  actions: read
+  actions: write
+  # actions:write lets the ccache step actually save (restore works
+  # read-only, but without write every build pays full compile time).
 
 env:
   # Official Arch image, pinned by digest. Update with:
@@ -47,6 +49,9 @@ env:
 jobs:
   update:
     name: Update packaging from Arch
+    # Pinned rebuilds must reproduce the dispatch-time tree: skip the
+    # auto-update when the maintainer pinned an explicit version.
+    if: ${{ inputs.kernel_version == '' && inputs.bore_version == '' }}
     runs-on: ubuntu-latest
     outputs:
       changed: ${{ steps.commit.outputs.changed }}
@@ -351,11 +356,13 @@ jobs:
           set -euo pipefail
           tag="${{ steps.tag.outputs.release_tag }}"
           title="linux-enigmarsos ${{ needs.decide.outputs.package_version }} (BORE ${{ needs.decide.outputs.bore_version }})"
+          # Target HEAD, not github.sha: the update job may have added a
+          # packaging commit, and the release must point at the tree that
+          # was built. (Keep comments out of the \-continued command below:
+          # a # line breaks the continuation and orphans the next flag.)
           gh release create "$tag" \
             --title "$title" \
             --notes-file out/RELEASE-NOTES.md \
-            # HEAD, not github.sha: the update job may have added a packaging
-            # commit, and the release must point at the tree that was built.
             --target "$(git rev-parse HEAD)" \
             out/linux-enigmarsos-*.pkg.tar.zst \
             out/linux-enigmarsos-headers-*.pkg.tar.zst \
