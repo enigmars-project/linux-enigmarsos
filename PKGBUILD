@@ -2,13 +2,13 @@
 # Contributor: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
 #
 # Derived from the official Arch Linux `linux` PKGBUILD (0BSD).
-# Tracked Arch package: linux 7.2.7.arch1-1
+# Tracked Arch package: linux 7.2.8.arch1-1
 #
 # This is not a kernel fork. The tree is:
 #   vanilla Linux 7.1.8 + Arch patch + BORE 6.8.0 + EnigmarsOS config fragment
 
 pkgbase=linux-enigmarsos
-pkgver=7.2.7.arch1
+pkgver=7.2.8.arch1
 pkgrel=3
 pkgdesc='EnigmarsOS Linux'
 url='https://github.com/enigmars-project/linux-enigmarsos'
@@ -70,18 +70,18 @@ validpgpkeys=(
   647F28654894E3BD457199BE38DBBDC86092693E  # Greg Kroah-Hartman
   83BC8889351B5DEBBB68416EB8AC08600F108CDF  # Jan Alexander Steffens (heftig)
 )
-b2sums=('0fa304e65b0d96d6082e3040db9c974ebdbcfd54a2bc22a8841db63291787f01bf63862d882ecf77cb810f51e91db4e44ac6e27616f93f945531b868b9a1a00d'
+b2sums=('5326dde778eb945f282740ef0d8765b46fbd198f1209cdfd7b91e5dac1312fc01f8bf0b2bc67b16a76de736edd8ea21b38b6c91e696ec0c4b39746cd21a15214'
         'SKIP'
-        '29c08d638cf058e63f3b40d4ccba5dc0d04a51c3f2ad6073d84dd34920f550c2ca7a9dfe11f92c632eb732d0ab76e061770c3659501ac5a40fbff4bd7e052655'
+        '107774838edc0c45c3dd602ee6dddedecade6a0b5b85a02a62500d0af64c2c36ed4bcdd15e8e85df1e1a3dbc3efbe1e514f34af9ab3f251b1dcf496e633bdb2d'
         'SKIP'
         '99a35a06bb9a02ed4ebb481397d3c9abf1f18beb784bb8ff1eead8e053cb83709b6e3d950241e5d638fef835c4f0bb004f0729bfb61aea85e2d6fc762d4ff92a'
         '1ce4482c88ccf6f0f8e59dd550beb6aa41b8e1d908548ed6c5c02d9b2842319c90ba13185a70b0e57dea09fa9137b67e772f7a3660cc829e8c75f4d5ebca2372')
-b2sums_x86_64=('b70a9b80bec8aa71ec09e65aaf7f8949258de172b69405e5fade253795593f2dffd4189025609dd79d24ae8db06d078ee2b80090f120da1626515e8b1f9e70d5')
+b2sums_x86_64=('6fd8ed7afb16b4aa2e6807c7c056a337d19388e19e1554429658532cc86b04b0105b027642ce8782f5b3a61e6c9e8d9f810e8ec42ea199ad8c3ca6bcd596d22a')
 
 # https://www.kernel.org/pub/linux/kernel/v7.x/sha256sums.asc
-sha256sums=('4ac34c47db2540ffb2713943f8d891ff1702e0ba6934525a493b7d1cad43145a'
+sha256sums=('12e8d5a973d1ad7c5a5c69882e4022b131ed715db7003fdcd760ddf8c3e51941'
             'SKIP'
-            '22db40cf8a49b46518223ff78cc5b83377474948a4667ee40cacd3f1d571c609'
+            'fee5e7b494cdb2bb833ff6c3516e9360ffbf645ac3efd473ee52291ebe2d446e'
             'SKIP'
         '948aa495364332596d9f00fba1f90b2da04676a37faaeab9ef2390c44c7fbd83'
         '777a7495ff3ed47dbf5f2ae044d50ac5d298c2c8a7e12ef4f3455d5656d2c93d')
