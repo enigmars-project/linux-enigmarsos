@@ -2,7 +2,7 @@
 # Contributor: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
 #
 # Derived from the official Arch Linux `linux` PKGBUILD (0BSD).
-# Tracked Arch package: linux 7.2.8.arch1-1
+# Tracked Arch package: linux 7.2.8.arch1-2
 #
 # This is not a kernel fork. The tree is:
 #   vanilla Linux 7.1.8 + Arch patch + BORE 6.8.0 + EnigmarsOS config fragment
@@ -41,7 +41,7 @@ options=(
 )
 
 # Arch linux package this PKGBUILD was last synchronized against.
-_arch_pkgrel=1
+_arch_pkgrel=2
 _srcname=linux-${pkgver%.*}
 _srctag=v${pkgver%.*}-${pkgver##*.}
 _arch_linux_url='https://github.com/archlinux/linux'
