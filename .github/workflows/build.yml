@@ -168,10 +168,13 @@ jobs:
 
           if [ "$event" = "schedule" ]; then
             # Strict x.x.x compare: same kernel already released -> skip.
+            # Otherwise build AND publish (scheduled runs are releases here).
             if gh release view "$tag" >/dev/null 2>&1; then
               echo "Release $tag already exists (same x.x.x); skipping scheduled compile."
               compile=false
               publish=false
+            else
+              publish=true
             fi
           fi
 
