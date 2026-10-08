@@ -12,10 +12,13 @@ Usage: update-bore.sh [--check] [BORE_VERSION]
 Looks at firelzrd/bore-scheduler and selects a patch compatible with
 the upstream kernel series in PKGBUILD.
 
+Upstream layout (as of 2026): versioned patches live flat under
+patches/stable (older layouts used per-series subdirectories and a
+patches/testing directory; both forms are accepted).
+
 Preference order:
-  1. testing patch whose filename contains the exact upstream version
-  2. testing patch for the same major.minor series
-  3. stable patch for the same major.minor series
+  1. patch whose filename contains the exact upstream version
+  2. patch for the same major.minor series
 
 The chosen file is copied to patches/bore.patch and patches/bore.meta
 is rewritten. The script refuses to invent a patch. If nothing matches,
@@ -50,7 +53,6 @@ cleanup() { rm -rf "$WORKDIR"; }
 trap cleanup EXIT
 
 api="https://api.github.com/repos/firelzrd/bore-scheduler/contents"
-curl -fsSL "$api/patches/testing" > "$WORKDIR/testing.json"
 curl -fsSL "$api/patches/stable" > "$WORKDIR/stable.json"
 # NOTE: fetched to a file, NOT a shell variable. The single-commit endpoint
 # embeds full file diffs (~250KB), which exceeds MAX_ARG_STRLEN (128KiB)
@@ -67,38 +69,30 @@ commit = json.load(open(os.path.join(workdir, "commit.json"), encoding="utf-8"))
 commit_sha = commit["sha"]
 commit_date = commit["commit"]["committer"]["date"][:10]
 
-testing = json.load(open(os.path.join(workdir, "testing.json"), encoding="utf-8"))
-stable_dirs = json.load(open(os.path.join(workdir, "stable.json"), encoding="utf-8"))
+stable_entries = json.load(open(os.path.join(workdir, "stable.json"), encoding="utf-8"))
 
-def list_files(entries):
-    return [e for e in entries if e.get("type") == "file" and e["name"].endswith(".patch")]
-
-candidates = []
-for e in list_files(testing):
+def add_candidate(channel, e):
     candidates.append({
-        "channel": "testing",
+        "channel": channel,
         "name": e["name"],
         "path": e["path"],
         "url": e["download_url"],
         "sha": e.get("sha", ""),
     })
 
-# stable is a set of directories like linux-7.1-bore
-import urllib.request
-for d in stable_dirs:
-    if d.get("type") != "dir":
-        continue
-    url = f"https://api.github.com/repos/firelzrd/bore-scheduler/contents/{d['path']}"
-    with urllib.request.urlopen(url, timeout=30) as resp:
-        entries = json.load(resp)
-    for e in list_files(entries):
-        candidates.append({
-            "channel": "stable",
-            "name": e["name"],
-            "path": e["path"],
-            "url": e["download_url"],
-            "sha": e.get("sha", ""),
-        })
+candidates = []
+# stable is nowadays a flat file list; older layouts used one directory
+# per series (e.g. linux-7.2-bore). Accept both.
+for e in stable_entries:
+    if e.get("type") == "file" and e["name"].endswith(".patch"):
+        add_candidate("stable", e)
+    elif e.get("type") == "dir":
+        url = f"https://api.github.com/repos/firelzrd/bore-scheduler/contents/{e['path']}"
+        with urllib.request.urlopen(url, timeout=30) as resp:
+            entries = json.load(resp)
+        for sub in entries:
+            if sub.get("type") == "file" and sub["name"].endswith(".patch"):
+                add_candidate("stable", sub)
 
 def parse_name(name):
     # 0001-linux7.1.5-bore-6.8.0.patch
@@ -123,8 +117,6 @@ for c in candidates:
         score += 300
     elif designed.startswith(series):
         score += 200
-    if c["channel"] == "testing":
-        score += 10
     # Prefer the numerically newest designed version within a series.
     nums = [int(x) for x in re.findall(r'\d+', designed)]
     score += nums[-1] if nums else 0
