@@ -3,12 +3,12 @@
 # by hand. Refresh it with ./scripts/update-bore.sh.
 
 BORE_VERSION=7.0.0
-BORE_COMMIT=d429c0226fb5d25d51e6869a4bf7d8256e1122ff
-BORE_DATE=2026-09-18
-BORE_CHANNEL=testing
+BORE_COMMIT=1e2f57ad74e8b8b1d315c03b7abd8d74e40448b4
+BORE_DATE=2026-10-06
+BORE_CHANNEL=stable
 BORE_DESIGNED_FOR_KERNEL=7.2-rc1
 BORE_UPSTREAM_REPO=https://github.com/firelzrd/bore-scheduler
-BORE_UPSTREAM_PATH=patches/testing/0001-linux7.2-rc1-bore-7.0.0.patch
+BORE_UPSTREAM_PATH=patches/stable/0001-linux7.2-rc1-bore-7.0.0.patch
 BORE_LICENSE=GPL-2.0-only
 BORE_SHA256=948aa495364332596d9f00fba1f90b2da04676a37faaeab9ef2390c44c7fbd83
 BORE_B2SUM=99a35a06bb9a02ed4ebb481397d3c9abf1f18beb784bb8ff1eead8e053cb83709b6e3d950241e5d638fef835c4f0bb004f0729bfb61aea85e2d6fc762d4ff92a
