@@ -2,7 +2,7 @@
 # Contributor: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
 #
 # Derived from the official Arch Linux `linux-lts` PKGBUILD (0BSD).
-# Tracked Arch package: linux-lts 6.18.54-1
+# Tracked Arch package: linux-lts 6.18.55-1
 #
 # This is not a kernel fork. The tree is:
 #   vanilla Linux 6.18.51 + Arch linux-lts patches + BORE 6.8.0
@@ -12,7 +12,7 @@
 # (linux-enigmarsos) and is installed by Calamares.
 
 pkgbase=linux-enigmarsos-lts
-pkgver=6.18.54
+pkgver=6.18.55
 pkgrel=3
 pkgdesc='EnigmarsOS Linux LTS'
 url='https://github.com/enigmars-project/linux-enigmarsos'
@@ -56,7 +56,7 @@ _x86_64_march=x86-64-v2
 
 # BORE pin. Keep in sync with patches/bore.meta.
 _bore_version=7.0.0
-_bore_commit=d429c0226fb5d25d51e6869a4bf7d8256e1122ff
+_bore_commit=1e2f57ad74e8b8b1d315c03b7abd8d74e40448b4
 _bore_designed_for=6.18.48
 
 source=(
@@ -74,17 +74,17 @@ validpgpkeys=(
   ABAF11C65A2970B130ABE3C479BE3E4300411886  # Linus Torvalds
   647F28654894E3BD457199BE38DBBDC86092693E  # Greg Kroah-Hartman
 )
-b2sums=('8b86b9130a4847bb1188b0181922713afe367717560ad9faebc327feb911285a11a79309aaaebd705fac6eab7671986ac6726ec8aa44a11c686a2fdece638f3c'
+b2sums=('c329021f6ac359c07f3863c5493694330020540632a6b9a15033b3440dbef116d84a652c71cd3dd12fca680f5b49edaf568f841d087eb4a2c34b890a078b9672'
         'SKIP'
         'f98f4a2e714f7c9e05740caaad2bf014065ec950c096df74a3dee8b2ce6549f034adf6f87a76168f513aa68eb738edbdb6fe1a3f1b3a5104201c65199b5b931e'
         '6ca246df80fa85f9c21d090f87ee31e33acb02f3c1147944750e0896ebf199bc0cf427a164dacbdd9baa26dbdbce2fabd89ebdb6a8ce5dae83fc455b27a56cc8'
         'a612d5ea58485eeaa5cce0b30074ab3188f4321c4759448780de2f3f656821356d640df433e31bd4e8f2c9719c8e275374ddea29b9504335ed0981be5ac7bf7b'
         'ed0839b759e6a63aa7e349b4aa6b5cc6d3c169c11be8ed19265a03fd5e0a1ddd8576290e5ba179921ab73a3d301e958fe28109bc404e6855a8e4dd21459a0266'
         '8d90f477415b6cb19e5c2a906ad88fb42f27e6beabdfb405ea80b47b3b5f32c5f1903535375b19b69d6189f7020139fe55c66c05d51cd7bec305df76ee72499f')
-b2sums_x86_64=('3c5aa9f030b84530859c80e340103677ffd91e4027418045c0ae8fbf514e3c8936dd82e956cc2b74e1675fc2b9eb751249eae3234a8168bc8d2fb711876cc0b0')
+b2sums_x86_64=('24f0f2742ec4da65c4b154a9898102794c5ac28881e0b8c00704a5813b0e05718f8053028126ab220c8049d983c46a48479b449fb9b4460751a7b9931d7665bf')
 
 # https://www.kernel.org/pub/linux/kernel/v6.x/sha256sums.asc
-sha256sums=('9df30b02dd8102bbd0be52556288ef6889ddbe7f1ddb96fbf847d0becf3eacac'
+sha256sums=('f410638061a165c12f42ab871d2f3fcd525515359b5faeee80969cff84524df9'
             'SKIP'
             '0bb3b4cda53db35c10e0a34defb5f52f3c91895d7b4a9f93b3f40f5401a71e02'
             '70d54dfde13e52ea1109c4222a987a29ada68feec35dca9ce4afd6f7977e8740'
