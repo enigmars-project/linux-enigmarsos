@@ -2,7 +2,7 @@
 # Contributor: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
 #
 # Derived from the official Arch Linux `linux-lts` PKGBUILD (0BSD).
-# Tracked Arch package: linux-lts 6.18.56-2
+# Tracked Arch package: linux-lts 6.18.57-2
 #
 # This is not a kernel fork. The tree is:
 #   vanilla Linux 6.18.51 + Arch linux-lts patches + BORE 6.8.0
@@ -12,7 +12,7 @@
 # (linux-enigmarsos) and is installed by Calamares.
 
 pkgbase=linux-enigmarsos-lts
-pkgver=6.18.56
+pkgver=6.18.57
 pkgrel=3
 pkgdesc='EnigmarsOS Linux LTS'
 url='https://github.com/enigmars-project/linux-enigmarsos'
@@ -74,17 +74,17 @@ validpgpkeys=(
   ABAF11C65A2970B130ABE3C479BE3E4300411886  # Linus Torvalds
   647F28654894E3BD457199BE38DBBDC86092693E  # Greg Kroah-Hartman
 )
-b2sums=('c10423b3a1e64cbda1f2097adb61f01d682f24100daa569b983aab3826fe2e2e501a57182657abfd1f9a58d58448d579e4ff90d2a673d7956371925886310db0'
+b2sums=('d9d47914c7fb82e299ea1400f978ec5f42fefc199e44206edb2b4b4c699aca814436e90f837758a2f4d7004f0b0000bb58343a91ca1c31aad77694084c72894a'
         'SKIP'
         '6da4d826e1f432b6fc148adbb636e338bfef4e51233c2fc78446666cd322b66b4846377524ede92dcea376b29359a2ecd2f9900f509c696fc5cd6efcc90363cd'
         'bef18d34c0864787aa372db1a3d179a527741e1a86501918badba436555cdb38762a51cc6398230a7534bda276693792a2224f68a045dcdb6bdea63a96edc41b'
         'a612d5ea58485eeaa5cce0b30074ab3188f4321c4759448780de2f3f656821356d640df433e31bd4e8f2c9719c8e275374ddea29b9504335ed0981be5ac7bf7b'
         'ed0839b759e6a63aa7e349b4aa6b5cc6d3c169c11be8ed19265a03fd5e0a1ddd8576290e5ba179921ab73a3d301e958fe28109bc404e6855a8e4dd21459a0266'
         '8d90f477415b6cb19e5c2a906ad88fb42f27e6beabdfb405ea80b47b3b5f32c5f1903535375b19b69d6189f7020139fe55c66c05d51cd7bec305df76ee72499f')
-b2sums_x86_64=('ab8002428c368b3921371dd435076de49ced65bde17eaa5df421ee99b6dd0a1d8b1f944c5041f1914c3552d5122b1e5d49af8771f7057dbb192edb8a8e4f81b3')
+b2sums_x86_64=('794d81dc9a8210e496fa6de426cbfdb1ff69cac4d62ebc70133b9d4f4a0c1b2b23553e793eb79800c56fd11addb9e12ec6c31ecb1dd51f3b9ad133f58ded2406')
 
 # https://www.kernel.org/pub/linux/kernel/v6.x/sha256sums.asc
-sha256sums=('4633bbda2ab95eaf2a7af4041236451d6759c72e6946265531af4b3aacefbf89'
+sha256sums=('5bd9acdc82ec5efc3790ae840e5aaa40dfde7efff261cf6dde902dc570acf98c'
             'SKIP'
             'fc4525901142589d4bf7d2b8d1bc474647bff879e610147cd3498eca935a2289'
             'a5497e9e0a47a581cf7d259419b1ede98096512d2e671222caf59a06816c9167'

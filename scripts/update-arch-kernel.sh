@@ -177,6 +177,102 @@ if [[ -d "$WORKDIR/linux/keys/pgp" ]]; then
   info "refreshed keys/pgp"
 fi
 
+# Verify the in-repo PKGBUILD now matches the source() array and the actual
+# files on disk, BEFORE anything is committed. Catches sum/file drift (a
+# refresh that updates checksums but whose file changes never get staged)
+# and count drift (Arch adding or removing a patch) that would otherwise
+# only surface as a makepkg failure hours later.
+python3 - "$PKGBUILD_PATH" "$REPO_ROOT" <<'PY'
+import hashlib, os, re, sys
+
+pkgbuild_path, repo_root = sys.argv[1:3]
+text = open(pkgbuild_path, encoding="utf-8").read()
+
+m = re.search(r'^source=\((.*?)\)', text, re.S | re.M)
+if not m:
+    raise SystemExit("could not find source=() in PKGBUILD")
+entries = [e.strip().strip("'\"") for e in m.group(1).splitlines() if e.strip()]
+
+
+def brace_expand(entry):
+    """Expand bash-style {a,b} alternations into separate sources.
+
+    A brace directly preceded by '$' is a shell parameter expansion
+    (${var}, ${var%%x}) and must NOT be treated as an alternation list;
+    the lookbehind enforces that.
+    """
+    out = [entry]
+    for _ in range(8):
+        nxt = []
+        changed = False
+        for e in out:
+            bm = re.search(r'(?<!\$)\{([^{}$]+)\}', e)
+            if not bm:
+                nxt.append(e)
+                continue
+            opts = bm.group(1).split(",")
+            if len(opts) < 2:
+                nxt.append(e)
+                continue
+            changed = True
+            nxt.extend(e[:bm.start()] + o + e[bm.end():] for o in opts)
+        out = nxt
+        if not changed:
+            break
+    return out
+
+
+expanded = []
+for e in entries:
+    expanded.extend(brace_expand(e))
+
+sm = re.search(r'^sha256sums=\((.*?)\)', text, re.S | re.M)
+if not sm:
+    raise SystemExit("could not find sha256sums=() in PKGBUILD")
+sums = re.findall(r"'([^']*)'", sm.group(1))
+
+bm = re.search(r'^b2sums=\((.*?)\)', text, re.S | re.M)
+if not bm:
+    raise SystemExit("could not find b2sums=() in PKGBUILD")
+b2sums = re.findall(r"'([^']*)'", bm.group(1))
+
+# makepkg verifies both (INTEGRITY_CHECK=(b2 sha256)); check both here.
+for name, sums_n in (("sha256sums", sums), ("b2sums", b2sums)):
+    if len(sums_n) != len(expanded):
+        raise SystemExit(
+            f"{name} has {len(sums_n)} entries but source() expands to "
+            f"{len(expanded)}; the Arch patch list and the checksum list are "
+            "out of sync"
+        )
+
+digesters = (
+    ("sha256sums", sums, lambda blob: hashlib.sha256(blob).hexdigest()),
+    ("b2sums", b2sums, lambda blob: hashlib.blake2b(blob).hexdigest()),
+)
+checked = 0
+for entry, sha_expected, b2_expected in zip(expanded, sums, b2sums):
+    base = entry.rsplit("/", 1)[-1]
+    if "://" in entry:
+        continue
+    path = os.path.join(repo_root, base)
+    if not os.path.isfile(path):
+        raise SystemExit(f"local source file listed in source() is missing: {base}")
+    blob = open(path, "rb").read()
+    for name, sums_n, digest in digesters:
+        expected = sha_expected if name == "sha256sums" else b2_expected
+        if expected.upper() == "SKIP":
+            continue
+        actual = digest(blob)
+        if actual != expected:
+            raise SystemExit(
+                f"{name} mismatch for {base}:\n"
+                f"  PKGBUILD: {expected}\n"
+                f"  on disk:  {actual}"
+            )
+        checked += 1
+print(f"verified {checked} local source file checksum(s) against sha256sums/b2sums")
+PY
+
 info "Arch packaging synchronized to $UP_pkgver (Arch pkgrel $UP_pkgrel)"
 info "Next: ./scripts/update-bore.sh"
 info "Then review the diff, commit, and trigger the workflow."

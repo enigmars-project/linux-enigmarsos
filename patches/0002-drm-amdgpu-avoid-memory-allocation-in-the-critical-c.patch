@@ -108,10 +108,10 @@ index 81cf9bf999a4..84770635fd04 100644
  }
  
 diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c
-index ffbae605caaa..07a0bef7a808 100644
+index f78ac6777ee5..1b6d79df6b51 100644
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c
 +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c
-@@ -2836,21 +2836,14 @@ void amdgpu_vm_fini(struct amdgpu_device *adev, struct amdgpu_vm *vm)
+@@ -2845,21 +2845,14 @@ void amdgpu_vm_fini(struct amdgpu_device *adev, struct amdgpu_vm *vm)
   */
  void amdgpu_vm_manager_init(struct amdgpu_device *adev)
  {
