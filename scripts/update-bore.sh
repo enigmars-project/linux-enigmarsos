@@ -38,7 +38,7 @@ for arg in "$@"; do
   esac
 done
 
-need_cmd curl
+need_cmd git
 need_cmd python3
 need_cmd sha256sum
 
@@ -52,47 +52,55 @@ WORKDIR="$(mktemp -d "${TMPDIR:-/tmp}/enigmarsos-bore.XXXXXX")"
 cleanup() { rm -rf "$WORKDIR"; }
 trap cleanup EXIT
 
-api="https://api.github.com/repos/firelzrd/bore-scheduler/contents"
-curl -fsSL "$api/patches/stable" > "$WORKDIR/stable.json"
-# NOTE: fetched to a file, NOT a shell variable. The single-commit endpoint
-# embeds full file diffs (~250KB), which exceeds MAX_ARG_STRLEN (128KiB)
-# and fails with "Argument list too long" if passed as an argv string.
-curl -fsSL https://api.github.com/repos/firelzrd/bore-scheduler/commits/main > "$WORKDIR/commit.json"
+bore_repo="https://github.com/firelzrd/bore-scheduler.git"
+# Clone (git protocol) rather than query api.github.com: the anonymous REST
+# quota is 60 req/hour per IP, and CI runners share egress IPs, which caused
+# spurious 403s mid-update. The git protocol is not rate-limited.
+clone=0
+for attempt in 1 2 3; do
+  if GIT_TERMINAL_PROMPT=0 git clone --depth 1 --quiet "$bore_repo" "$WORKDIR/bore"; then
+    clone=1
+    break
+  fi
+  warn "bore-scheduler clone failed (attempt $attempt/3)"
+  rm -rf "$WORKDIR/bore"
+  sleep $((attempt * 5))
+done
+[[ "$clone" -eq 1 ]] || die "could not clone $bore_repo"
+commit_sha="$(git -C "$WORKDIR/bore" rev-parse HEAD)"
+commit_date="$(git -C "$WORKDIR/bore" log -1 --format=%cd --date=short)"
 
 python3 - "$WORKDIR" "$kernel" "$series" "${REQUESTED}" "$CHECK_ONLY" \
-  "$BORE_PATCH" "$BORE_META" <<'PY'
-import json, os, re, sys, urllib.request, hashlib, datetime
+  "$BORE_PATCH" "$BORE_META" "$commit_sha" "$commit_date" <<'PY'
+import os, re, sys, hashlib
 
-workdir, kernel, series, requested, check_only, dest_patch, dest_meta = sys.argv[1:8]
+(workdir, kernel, series, requested, check_only, dest_patch, dest_meta,
+ commit_sha, commit_date) = sys.argv[1:10]
 check_only = check_only == "1"
-commit = json.load(open(os.path.join(workdir, "commit.json"), encoding="utf-8"))
-commit_sha = commit["sha"]
-commit_date = commit["commit"]["committer"]["date"][:10]
-
-stable_entries = json.load(open(os.path.join(workdir, "stable.json"), encoding="utf-8"))
-
-def add_candidate(channel, e):
-    candidates.append({
-        "channel": channel,
-        "name": e["name"],
-        "path": e["path"],
-        "url": e["download_url"],
-        "sha": e.get("sha", ""),
-    })
+bore_root = os.path.join(workdir, "bore")
 
 candidates = []
+def scan(relative_dir, channel):
+    root = os.path.join(bore_root, relative_dir)
+    if not os.path.isdir(root):
+        return
+    for dirpath, _dirnames, filenames in os.walk(root):
+        for name in sorted(filenames):
+            if not name.endswith(".patch"):
+                continue
+            local = os.path.join(dirpath, name)
+            candidates.append({
+                "channel": channel,
+                "name": name,
+                "path": os.path.relpath(local, bore_root),
+                "local": local,
+            })
+
 # stable is nowadays a flat file list; older layouts used one directory
-# per series (e.g. linux-7.2-bore). Accept both.
-for e in stable_entries:
-    if e.get("type") == "file" and e["name"].endswith(".patch"):
-        add_candidate("stable", e)
-    elif e.get("type") == "dir":
-        url = f"https://api.github.com/repos/firelzrd/bore-scheduler/contents/{e['path']}"
-        with urllib.request.urlopen(url, timeout=30) as resp:
-            entries = json.load(resp)
-        for sub in entries:
-            if sub.get("type") == "file" and sub["name"].endswith(".patch"):
-                add_candidate("stable", sub)
+# per series (e.g. linux-7.2-bore). os.walk handles both.
+scan("patches/stable", "stable")
+# testing was removed upstream; keep honouring it if it ever returns.
+scan("patches/testing", "testing")
 
 def parse_name(name):
     # 0001-linux7.1.5-bore-6.8.0.patch
@@ -142,9 +150,8 @@ print(f"  Upstream path: {best['path']}")
 if check_only:
     sys.exit(0)
 
-print("Downloading", best["url"])
-with urllib.request.urlopen(best["url"], timeout=60) as resp:
-    data = resp.read()
+print("Reading", best["path"])
+data = open(best["local"], "rb").read()
 
 sha256 = hashlib.sha256(data).hexdigest()
 try:
