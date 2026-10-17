@@ -2,13 +2,13 @@
 # Contributor: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
 #
 # Derived from the official Arch Linux `linux` PKGBUILD (0BSD).
-# Tracked Arch package: linux 7.2.9.arch1-1
+# Tracked Arch package: linux 7.2.11.arch1-1
 #
 # This is not a kernel fork. The tree is:
 #   vanilla Linux 7.1.8 + Arch patch + BORE 6.8.0 + EnigmarsOS config fragment
 
 pkgbase=linux-enigmarsos
-pkgver=7.2.9.arch1
+pkgver=7.2.11.arch1
 pkgrel=3
 pkgdesc='EnigmarsOS Linux'
 url='https://github.com/enigmars-project/linux-enigmarsos'
@@ -70,18 +70,18 @@ validpgpkeys=(
   647F28654894E3BD457199BE38DBBDC86092693E  # Greg Kroah-Hartman
   83BC8889351B5DEBBB68416EB8AC08600F108CDF  # Jan Alexander Steffens (heftig)
 )
-b2sums=('c853d45f0df3b713a84695c487b56e44d40da007fb48700be4bf0180c6aa15e7f087ac2d52f1cf7997b4de262aeae5094c772f36297405de1c7b8985a420328b'
+b2sums=('36a455379876a3f452dce7347211ac34ddfda9a445b0b8c0ee92664429a8ea85d2f1a101126b6d748545aaf18e3534f8db53d6110952f3d5487d029ff0f9a800'
         'SKIP'
-        '16446f9f4a28f4d372c03e42927637a0e13fc6d921d7535ee8cca9e059c27142980ff85ad6d7518f77008394636d3e0f6afc00251347adc8f2ef6d6939846050'
+        '06f49715b71884a0cbad51ab4b526c1516926cb2429e7a6e485aa48ebf277811dec391ae2264501245654275a84af1df3780bf8bf8df755cf47670d6c9397703'
         'SKIP'
         '99a35a06bb9a02ed4ebb481397d3c9abf1f18beb784bb8ff1eead8e053cb83709b6e3d950241e5d638fef835c4f0bb004f0729bfb61aea85e2d6fc762d4ff92a'
         '1ce4482c88ccf6f0f8e59dd550beb6aa41b8e1d908548ed6c5c02d9b2842319c90ba13185a70b0e57dea09fa9137b67e772f7a3660cc829e8c75f4d5ebca2372')
-b2sums_x86_64=('59a30b7a9010053f33344e3e2b0b1ea92bbb040179c4630cf5e5d05158c7bb99a7af315184310a622e2a838a4ce3a123d8e81bf6c7887bac47fd9c42d9f18330')
+b2sums_x86_64=('58babcf7bed396598de1a7c010292aebb56b2c726f9d8d28344049646d5ed814489db0e22a4e62718e5e6dcc94c581858c17b235e88dc3263fa78934d2a84104')
 
 # https://www.kernel.org/pub/linux/kernel/v7.x/sha256sums.asc
-sha256sums=('b4c5dfbe51a364a6c7f03869200f88c8e1f77403539005f14b7fc6bc91b8d8ba'
+sha256sums=('fd0fc479f983a8c05313f13e9c36330fe6651cf725396748c40d5cd93fa1e6a4'
             'SKIP'
-            '95eac21ec3b619945f86b205af0c2dd3eae2d01c79d1bf7da4b180556097ce03'
+            '741d473c4db335d97d9e1d9b8be9337090522550804fe6454ba336d21e580fd6'
             'SKIP'
         '948aa495364332596d9f00fba1f90b2da04676a37faaeab9ef2390c44c7fbd83'
         '777a7495ff3ed47dbf5f2ae044d50ac5d298c2c8a7e12ef4f3455d5656d2c93d')
