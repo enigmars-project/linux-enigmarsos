@@ -78,6 +78,20 @@ jobs:
           git config user.email "ci@enigmarsos.org"
           git add PKGBUILD patches/bore.patch patches/bore.meta \
             config/config.x86_64 keys/pgp
+          # Stage refreshed Arch patches too. update-arch-kernel.sh rewrites
+          # patches/000*.patch and their root symlinks, but only PKGBUILD was
+          # staged above: sums would be committed against stale files and
+          # makepkg would fail its sha256sums check. ls-files covers
+          # modifications AND deletions of tracked paths; the loop catches
+          # newly added patches. Guarded so a wholly-absent set is a no-op
+          # (an empty pathspec with -A would stage everything).
+          mapfile -t tracked_patches < <(git ls-files 'patches/000*.patch' '000*.patch')
+          if ((${#tracked_patches[@]})); then
+            git add -A -- "${tracked_patches[@]}"
+          fi
+          for p in patches/000*.patch 000*.patch; do
+            if [[ -e "$p" || -L "$p" ]]; then git add -- "$p"; fi
+          done
           if git diff --cached --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "Packaging already current; nothing to commit."
