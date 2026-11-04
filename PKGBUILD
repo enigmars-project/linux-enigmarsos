@@ -2,7 +2,7 @@
 # Contributor: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
 #
 # Derived from the official Arch Linux `linux-lts` PKGBUILD (0BSD).
-# Tracked Arch package: linux-lts 6.18.59-1
+# Tracked Arch package: linux-lts 6.18.60-2
 #
 # This is not a kernel fork. The tree is:
 #   vanilla Linux 6.18.51 + Arch linux-lts patches + BORE 6.8.0
@@ -12,7 +12,7 @@
 # (linux-enigmarsos) and is installed by Calamares.
 
 pkgbase=linux-enigmarsos-lts
-pkgver=6.18.59
+pkgver=6.18.60
 pkgrel=3
 pkgdesc='EnigmarsOS Linux LTS'
 url='https://github.com/enigmars-project/linux-enigmarsos'
@@ -45,7 +45,7 @@ options=(
 )
 
 # Arch linux-lts package this PKGBUILD was last synchronized against.
-_arch_pkgrel=1
+_arch_pkgrel=2
 _srcname=linux-$pkgver
 _srctag=v$pkgver
 
@@ -56,7 +56,7 @@ _x86_64_march=x86-64-v2
 
 # BORE pin. Keep in sync with patches/bore.meta.
 _bore_version=7.0.0
-_bore_commit=1e2f57ad74e8b8b1d315c03b7abd8d74e40448b4
+_bore_commit=c7aab1e736c885989ee41ca939e37b377d6afc81
 _bore_designed_for=6.18.48
 
 source=(
@@ -74,7 +74,7 @@ validpgpkeys=(
   ABAF11C65A2970B130ABE3C479BE3E4300411886  # Linus Torvalds
   647F28654894E3BD457199BE38DBBDC86092693E  # Greg Kroah-Hartman
 )
-b2sums=('e1c8459d26cbbe1cdecb1dcb8657f8ed928a85e77cc107d219efde79a137a3e99d188557b7bfecc64c7dcdf224f475eb713184415c30420fca739a4daa5dd7d1'
+b2sums=('46c65f2c9607e2d90250dd35223385455d98a262719c3b12bd55d256e15d4debf7c065d728c84800ffa6699b3ce45ce9d52a2d5cc739cbaea42ee4fd58bbbb7b'
         'SKIP'
         '6da4d826e1f432b6fc148adbb636e338bfef4e51233c2fc78446666cd322b66b4846377524ede92dcea376b29359a2ecd2f9900f509c696fc5cd6efcc90363cd'
         'bef18d34c0864787aa372db1a3d179a527741e1a86501918badba436555cdb38762a51cc6398230a7534bda276693792a2224f68a045dcdb6bdea63a96edc41b'
@@ -84,7 +84,7 @@ b2sums=('e1c8459d26cbbe1cdecb1dcb8657f8ed928a85e77cc107d219efde79a137a3e99d18855
 b2sums_x86_64=('794d81dc9a8210e496fa6de426cbfdb1ff69cac4d62ebc70133b9d4f4a0c1b2b23553e793eb79800c56fd11addb9e12ec6c31ecb1dd51f3b9ad133f58ded2406')
 
 # https://www.kernel.org/pub/linux/kernel/v6.x/sha256sums.asc
-sha256sums=('53a55ac9863a5547e292b8e381d4e4c2240dd1127d5428a7c44dbc550be23963'
+sha256sums=('3c2f44ef6acc021a7ad444d9a2e6ec1ef488ff09368793d0004a6080f69d621e'
             'SKIP'
             'fc4525901142589d4bf7d2b8d1bc474647bff879e610147cd3498eca935a2289'
             'a5497e9e0a47a581cf7d259419b1ede98096512d2e671222caf59a06816c9167'
