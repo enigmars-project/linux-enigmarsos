@@ -2,7 +2,7 @@
 # Contributor: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
 #
 # Derived from the official Arch Linux `linux-lts` PKGBUILD (0BSD).
-# Tracked Arch package: linux-lts 6.18.63-1
+# Tracked Arch package: linux-lts 6.18.63-3
 #
 # This is not a kernel fork. The tree is:
 #   vanilla Linux 6.18.51 + Arch linux-lts patches + BORE 6.8.0
@@ -45,7 +45,7 @@ options=(
 )
 
 # Arch linux-lts package this PKGBUILD was last synchronized against.
-_arch_pkgrel=1
+_arch_pkgrel=3
 _srcname=linux-$pkgver
 _srctag=v$pkgver
 
