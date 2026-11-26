@@ -3,8 +3,8 @@
 # by hand. Refresh it with ./scripts/update-bore.sh.
 
 BORE_VERSION=7.0.0
-BORE_COMMIT=8e1b3d4081e4667513bed5888534295f79d89add
-BORE_DATE=2026-11-09
+BORE_COMMIT=575c13bd2d8a0d96a2d445a87d5a71d20890b631
+BORE_DATE=2026-11-24
 BORE_CHANNEL=stable
 BORE_DESIGNED_FOR_KERNEL=7.3-rc2
 BORE_UPSTREAM_REPO=https://github.com/firelzrd/bore-scheduler
